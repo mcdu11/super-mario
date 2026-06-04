@@ -1,5 +1,5 @@
-import SpriteSheet from './SpriteSheet'
-import {createAnim} from "./anim";
+import SpriteSheet from './SpriteSheet.js'
+import {createAnim} from "./anim.js";
 
 
 // 得到图片HTMLObject
@@ -22,7 +22,7 @@ export function loadJSON(url) {
 // sheetSpec.imageURL 对应皮肤的图片位置
 // sheetSpec 定义了各种tile，比如地面的，天空 他们在图片上位置
 export function loadSpriteSheet(name) {
-    return loadJSON(`/assets/sprites/${name}.json`)
+    return loadJSON(`assets/sprites/${name}.json`)
         .then(sheetSpec => Promise.all([
             sheetSpec,
             loadImage(sheetSpec.imageURL),

@@ -1,0 +1,52 @@
+name: Deploy to GitHub Pages
+
+# 这是一个纯原生 ES module 的静态游戏，无需构建（webpack 仅用于旧的本地开发）。
+# 直接把静态文件打包上传并部署到 GitHub Pages。
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# 允许工作流写入 Pages 并使用 OIDC 进行部署
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只保留一个部署，新的推送会取消进行中的旧部署
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Assemble static site
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r js _site/
+          cp -r assets _site/
+          touch _site/.nojekyll
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

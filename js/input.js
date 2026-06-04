@@ -1,4 +1,4 @@
-import Keyboard from "./KeyboardState";
+import Keyboard from "./KeyboardState.js";
 
 export function setupKeyboard(mario) {
     const input = new Keyboard();
