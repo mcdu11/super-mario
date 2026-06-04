@@ -1,5 +1,5 @@
-import Compositor from "./Compositor";
-import TileCollider from "./TileCollider";
+import Compositor from "./Compositor.js";
+import TileCollider from "./TileCollider.js";
 
 /**
  * 关卡类

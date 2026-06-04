@@ -1,4 +1,4 @@
-import {Trait, Sides} from '../Entity'
+import {Trait, Sides} from '../Entity.js'
 
 export default class Jump extends Trait {
     constructor() {
