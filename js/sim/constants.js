@@ -12,3 +12,9 @@ export const ENEMY_MAX_FALL     = sp(4.0);  // 敌人最大下落速度 VERIFY
 
 export const STOMP_BOUNCE = sp(4.0); // 玩家踩敌后的弹起速度 VERIFY
 export const SQUASH_FRAMES = 30;     // goomba 被踩扁后停留多少帧再移除 VERIFY
+
+// ── 道具 / 变身 ───────────────────────────────────────────
+export const DAMAGE_IFRAMES = 120;       // 受伤降级后的无敌帧 VERIFY
+export const STAR_DURATION = 600;        // 星星无敌时长（帧）VERIFY
+export const STAR_BOUNCE = sp(3.0);      // 星星弹跳速度 VERIFY
+export const POWERUP_WALK_SPEED = sp(0.5); // 蘑菇/1up/星 移动速度 VERIFY

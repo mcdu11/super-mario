@@ -6,16 +6,24 @@
  * 否则侧面接触 → 受伤（或对静止壳 → 踢动）。
  */
 import {overlaps} from '../physics/AABB.js';
-import {STOMP_BOUNCE} from './constants.js';
+import {STOMP_BOUNCE, STAR_DURATION} from './constants.js';
 
 /**
  * 解析一次「玩家 vs 单个敌人」。会就地修改敌人状态与玩家 vy（弹起）。
- * @returns {'none'|'stomp'|'kick'|'hurt'}
- *   stomp 踩扁/缩壳/停壳；kick 踢动静止壳；hurt 玩家受伤；none 无交互
+ * @param {object} [opts]
+ * @param {boolean} [opts.starActive] 玩家处于星星无敌 → 任何接触秒杀敌人
+ * @param {boolean} [opts.invincible] 玩家处于受伤无敌帧 → 侧面接触不受伤
+ * @returns {'none'|'stomp'|'kick'|'hurt'|'starkill'}
  */
-export function resolvePlayerEnemy(player, enemy) {
+export function resolvePlayerEnemy(player, enemy, {starActive = false, invincible = false} = {}) {
     if (!enemy.alive || enemy.state === 'squashed') return 'none';
     if (!overlaps(player, enemy)) return 'none';
+
+    // 星星无敌：任意方向接触都秒杀敌人，玩家不受影响
+    if (starActive) {
+        enemy.die();
+        return 'starkill';
+    }
 
     const playerBottom = player.pos.y + player.heightSub;
     const enemyMid = enemy.pos.y + enemy.heightSub / 2;
@@ -36,8 +44,28 @@ export function resolvePlayerEnemy(player, enemy) {
         return 'kick';
     }
 
+    // 受伤无敌帧内：侧面接触不再受伤
+    if (invincible) return 'none';
+
     // 巡逻中的敌人或滑行的壳 → 伤害玩家
     return 'hurt';
+}
+
+/**
+ * 解析「玩家 vs 道具」拾取。会就地消费道具并应用到 PowerState。
+ * @returns {'none'|'mushroom'|'fireflower'|'star'|'oneup'}
+ */
+export function resolvePlayerPowerUp(player, power, item) {
+    if (!item.active) return 'none';
+    if (!overlaps(player, item)) return 'none';
+    item.state = 'consumed';
+    switch (item.kind) {
+        case 'mushroom':   power.grow(); return 'mushroom';
+        case 'fireflower': power.giveFire(); return 'fireflower';
+        case 'star':       power.giveStar(STAR_DURATION); return 'star';
+        case 'oneup':      return 'oneup'; // 加命由调用方处理
+        default:           return 'none';
+    }
 }
 
 /**
