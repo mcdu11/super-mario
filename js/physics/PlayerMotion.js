@@ -19,16 +19,17 @@ import {
 } from './constants.js';
 
 export default class PlayerMotion {
-    constructor({x = 32, y = 184, width = 14, height = 16, groundTop = 200} = {}) {
+    constructor({x = 32, y = 184, width = 14, height = 16, groundTop = 200, world = null} = {}) {
         this.pos = Vec2Fixed.fromPixels(x, y); // 左上角，子像素
         this.vx = 0; // 子像素/帧
         this.vy = 0;
         this.width = width;
         this.height = height;
         this.heightSub = fromPixels(height);
-        this.groundTopSub = fromPixels(groundTop); // 地面顶面 Y（子像素）
+        this.groundTopSub = fromPixels(groundTop); // 地面顶面 Y（子像素，仅扁平回退用）
+        this.world = world; // 碰撞器（GridCollider）；为 null 时退化为单一水平地面
 
-        this.onGround = (this.pos.y + this.heightSub >= this.groundTopSub);
+        this.onGround = world ? false : (this.pos.y + this.heightSub >= this.groundTopSub);
         this.facing = 1;        // 1 右 / -1 左
         this.runningTimer = 0;  // 松开 B 后维持跑速的宽限帧
         this.jumpFallBucket = 0;// 本次跳跃使用的重力档位
@@ -86,26 +87,43 @@ export default class PlayerMotion {
             this.onGround = false;
         }
 
-        // ── 重力：上升且按住 A 用弱重力，否则强重力（可变跳高）──
-        if (!this.onGround) {
+        // ── 重力（每帧施加；上升且按住 A 用弱重力，否则强重力 = 可变跳高）──
+        // 落地状态由碰撞解析负责重新判定，故此处不再用 onGround 门控。
+        {
             const b = this.jumpFallBucket;
             const g = (jump && this.vy < 0) ? GRAVITY_HOLD[b] : GRAVITY_FALL[b];
             this.vy += g;
             if (this.vy > MAX_FALL_SPEED) this.vy = MAX_FALL_SPEED;
         }
 
-        // ── 积分（整数子像素累加）──
+        // ── 分轴积分 + 碰撞解析（先 X 后 Y）──
         this.pos.x += this.vx;
+        this._collideX();
         this.pos.y += this.vy;
+        this._collideY();
 
-        // ── 地面碰撞（M1 用单一水平地面近似）──
+        this._prevJump = jump;
+    }
+
+    _collideX() {
+        if (this.world) {
+            this.world.collideX(this);
+        }
+        // 扁平回退：无墙，X 不处理
+    }
+
+    _collideY() {
+        if (this.world) {
+            this.world.collideY(this);
+            return;
+        }
+        // 扁平回退：单一水平地面
+        this.onGround = false;
         if (this.pos.y + this.heightSub >= this.groundTopSub) {
             this.pos.y = this.groundTopSub - this.heightSub;
             this.vy = 0;
             this.onGround = true;
         }
-
-        this._prevJump = jump;
     }
 
     /** 渲染用整数像素坐标 */
