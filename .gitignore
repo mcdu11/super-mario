@@ -6,3 +6,11 @@ dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# 版权资产卫生（见 docs/PERFECT-REPLICA-SPEC.md §0.2）：
+# 原版 ROM 及其提取物仅供本地个人学习/精确比对，绝不入库、绝不随公开 Pages 部署。
+*.nes
+*.chr
+*.nsf
+/roms/
+/assets/ripped/
