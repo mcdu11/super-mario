@@ -33,6 +33,7 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html _site/
+          cp physics-demo.html _site/
           cp -r js _site/
           cp -r assets _site/
           touch _site/.nojekyll

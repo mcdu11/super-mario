@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>super mario — 物理沙盒 (M0–M2)</title>
+    <style>
+        body { margin: 0; background: #1a1a1a; color: #ddd; font-family: monospace;
+               display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px; }
+        canvas { image-rendering: pixelated; border: 2px solid #444; }
+        p { max-width: 1024px; line-height: 1.6; }
+        kbd { background: #333; border: 1px solid #555; border-radius: 3px; padding: 1px 6px; }
+    </style>
+</head>
+<body>
+    <h2>定点 / 帧驱动物理沙盒 (M0–M2)</h2>
+    <canvas id="screen"></canvas>
+    <p>
+        操作：<kbd>←</kbd> <kbd>→</kbd> 移动，按住 <kbd>X</kbd> 跑（最高速更高），<kbd>Z</kbd> 跳。
+        试试：助跑跳得更远更高；上升中长按 <kbd>Z</kbd> 比点按跳得更高（可变跳高）；
+        全速冲刺后反向会先「刹车转身」；撞立柱被挡；掉进坑会自动重生。
+        左上角实时显示速度 (px/帧)、是否在地面、朝向与帧号。
+    </p>
+    <script type="module">
+        import {startPhysicsDemo} from './js/demo/physicsDemo.js';
+        startPhysicsDemo(document.getElementById('screen'));
+    </script>
+</body>
+</html>
