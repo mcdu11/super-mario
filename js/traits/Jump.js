@@ -59,7 +59,6 @@ export default class Jump extends Trait {
         // mario在空中的持续时间
         if (this.engageTime > 0) {
             entity.vel.y = -(this.velocity + Math.abs(entity.vel.x) * this.speedBoost);
-            console.log(entity.vel.y)
             this.engageTime -= deltaTime;
         }
         this.ready--;

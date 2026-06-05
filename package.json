@@ -9,7 +9,8 @@
     "whatwg-fetch": "^2.0.3"
   },
   "scripts": {
-    "dev": "webpack-dev-server --open --hot --inline"
+    "dev": "webpack-dev-server --open --hot --inline",
+    "test": "node --test"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
