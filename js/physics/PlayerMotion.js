@@ -126,6 +126,14 @@ export default class PlayerMotion {
         }
     }
 
+    /** 变身改变体型，保持脚底位置不变（上沿随高度增减而移动） */
+    setHeight(h) {
+        const newSub = fromPixels(h);
+        this.pos.y -= newSub - this.heightSub; // 脚底不变：top 反向移动差值
+        this.height = h;
+        this.heightSub = newSub;
+    }
+
     /** 渲染用整数像素坐标 */
     get pixelX() { return this.pos.pixelX; }
     get pixelY() { return this.pos.pixelY; }
