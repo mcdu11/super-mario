@@ -18,3 +18,11 @@ export const DAMAGE_IFRAMES = 120;       // 受伤降级后的无敌帧 VERIFY
 export const STAR_DURATION = 600;        // 星星无敌时长（帧）VERIFY
 export const STAR_BOUNCE = sp(3.0);      // 星星弹跳速度 VERIFY
 export const POWERUP_WALK_SPEED = sp(0.5); // 蘑菇/1up/星 移动速度 VERIFY
+
+// ── 火球 ─────────────────────────────────────────────────
+export const FIREBALL_SPEED = sp(3.0);       // 水平速度 VERIFY
+export const FIREBALL_GRAVITY = sp(0.5);     // 火球重力 VERIFY
+export const FIREBALL_BOUNCE = sp(2.5);      // 落地反弹速度 VERIFY
+export const FIREBALL_MAX_FALL = sp(4.0);    // 最大下落速度 VERIFY
+export const FIREBALL_EXPLODE_FRAMES = 8;    // 爆炸动画帧 VERIFY
+export const MAX_FIREBALLS = 2;              // 同屏火球上限 VERIFY

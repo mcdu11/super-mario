@@ -69,6 +69,19 @@ export function resolvePlayerPowerUp(player, power, item) {
 }
 
 /**
+ * 解析「火球 vs 敌人」。命中则杀敌并引爆火球。
+ * @returns {boolean} 是否命中
+ */
+export function resolveFireballEnemy(fireball, enemy) {
+    if (fireball.state !== 'flying') return false;
+    if (!enemy.alive || enemy.state === 'squashed') return false;
+    if (!overlaps(fireball, enemy)) return false;
+    enemy.die();
+    fireball.explode();
+    return true;
+}
+
+/**
  * 解析「滑行的壳 vs 另一敌人」（连杀）。
  * @returns {boolean} 是否击杀了 other
  */
