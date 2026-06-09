@@ -13,14 +13,20 @@
  */
 import Vec2Fixed from '../core/Vec2Fixed.js';
 import {fromPixels} from '../core/Fixed.js';
+import {tileIndex} from '../physics/TileGrid.js';
 import {Sides} from '../Entity.js';
 import {
     ENEMY_WALK_SPEED, SHELL_SLIDE_SPEED, ENEMY_GRAVITY, ENEMY_MAX_FALL, SQUASH_FRAMES,
+    PARATROOPA_HOP,
 } from './constants.js';
 
 export default class Enemy {
-    constructor({type, x, y, collider = null, width = 16, height = 16, dir = -1}) {
-        this.type = type; // 'goomba' | 'koopa'
+    constructor({type, x, y, collider = null, width = 16, height = 16, dir = -1,
+                 winged = false, ledgeAware = false} = {}) {
+        // 'paratroopa' = 带翅膀的 koopa
+        this.winged = winged || type === 'paratroopa';
+        this.type = type === 'paratroopa' ? 'koopa' : type; // 'goomba' | 'koopa'
+        this.ledgeAware = ledgeAware; // 红龟：不走下悬崖
         this.pos = Vec2Fixed.fromPixels(x, y);
         this.vx = 0;
         this.vy = 0;
@@ -32,6 +38,7 @@ export default class Enemy {
         this.onGround = false;
         this.state = 'walking';
         this.squashTimer = 0;
+        this.stompable = true; // goomba/koopa 可被踩（食人花/刺猬等为 false）
     }
 
     get alive() {
@@ -64,6 +71,15 @@ export default class Enemy {
             return;
         }
 
+        // 红龟：将走下悬崖前折返（脚下前方一格无固体则掉头）
+        if (this.state === 'walking' && this.ledgeAware && this.onGround && this.collider) {
+            const centerCol = tileIndex(this.pos.x + fromPixels(this.width) / 2);
+            const footRow = tileIndex(this.pos.y + this.heightSub); // 脚下那一行
+            if (!this.collider.grid.isSolid(centerCol + this.dir, footRow)) {
+                this.dir = -this.dir;
+            }
+        }
+
         // 水平速度由状态决定
         if (this.state === 'walking') this.vx = this.dir * ENEMY_WALK_SPEED;
         else if (this.state === 'sliding') this.vx = this.dir * SHELL_SLIDE_SPEED;
@@ -78,6 +94,11 @@ export default class Enemy {
         if (this.collider) this.collider.collideX(this);
         this.pos.y += this.vy;
         if (this.collider) this.collider.collideY(this);
+
+        // Paratroopa：落地即起跳（持续蹦跳）
+        if (this.winged && this.onGround) {
+            this.vy = -PARATROOPA_HOP;
+        }
     }
 
     /** 碰撞回报：撞到左右墙则折返 */
@@ -93,6 +114,10 @@ export default class Enemy {
             this.state = 'squashed';
             this.squashTimer = SQUASH_FRAMES;
         } else { // koopa
+            if (this.winged) {
+                this.winged = false; // Paratroopa 第一次被踩 → 失翅，变普通巡逻龟
+                return;
+            }
             // 巡逻→缩壳；滑行→停成静止壳
             this.state = 'shell';
             this.vx = 0;
