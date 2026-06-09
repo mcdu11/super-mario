@@ -51,8 +51,9 @@ const STAR_COL = 16; // 该 ? 砖出星星，其余出蘑菇/火花
 
 const ENEMIES = [
     {x: 12 * TILE_SIZE, y: GROUND_Y, type: 'goomba'},
+    {x: 18 * TILE_SIZE, y: GROUND_Y, type: 'paratroopa'},        // 蹦跳的飞龟
     {x: 20 * TILE_SIZE, y: GROUND_Y, type: 'koopa'},
-    {x: 23 * TILE_SIZE, y: GROUND_Y, type: 'goomba'},
+    {x: 26 * TILE_SIZE, y: GROUND_Y, type: 'koopa', ledgeAware: true}, // 红龟：到 col29 坑边折返
 ];
 
 const key = (col, row) => `${col},${row}`;
@@ -80,7 +81,8 @@ export function startPhysicsDemo(canvas) {
         slots = new ObjectSlots(5);
         spawner = new EnemySpawner(ENEMIES, {
             slots,
-            createEntity: p => new Enemy({type: p.type, x: p.x, y: p.y, collider, dir: -1}),
+            createEntity: p => new Enemy({type: p.type, x: p.x, y: p.y, collider, dir: -1,
+                winged: p.winged, ledgeAware: p.ledgeAware}),
             screenWidth: COLS * TILE_SIZE,
         });
     }
@@ -239,8 +241,14 @@ function render(ctx, s) {
             continue;
         }
         if (e.type === 'goomba') ctx.fillStyle = '#a0522d';
+        else if (e.ledgeAware) ctx.fillStyle = '#e40000'; // 红龟
         else ctx.fillStyle = (e.state === 'shell' || e.state === 'sliding') ? '#b5a000' : '#38a800';
         ctx.fillRect(e.pixelX, e.pixelY, e.width, e.height);
+        if (e.winged) { // 翅膀标记
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(e.pixelX - 2, e.pixelY + 2, 2, 6);
+            ctx.fillRect(e.pixelX + e.width, e.pixelY + 2, 2, 6);
+        }
     }
 
     // 火球

@@ -12,6 +12,7 @@ export const ENEMY_MAX_FALL     = sp(4.0);  // 敌人最大下落速度 VERIFY
 
 export const STOMP_BOUNCE = sp(4.0); // 玩家踩敌后的弹起速度 VERIFY
 export const SQUASH_FRAMES = 30;     // goomba 被踩扁后停留多少帧再移除 VERIFY
+export const PARATROOPA_HOP = sp(3.0); // Paratroopa 落地起跳速度 VERIFY
 
 // ── 道具 / 变身 ───────────────────────────────────────────
 export const DAMAGE_IFRAMES = 120;       // 受伤降级后的无敌帧 VERIFY
