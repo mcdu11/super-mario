@@ -16,6 +16,7 @@ import {Button, isDown} from '../input/Buttons.js';
 import ObjectSlots from '../world/ObjectSlots.js';
 import EnemySpawner from '../world/EnemySpawner.js';
 import Enemy from '../sim/Enemy.js';
+import Piranha from '../sim/Piranha.js';
 import PowerState, {SMALL, FIRE} from '../sim/PowerState.js';
 import PowerUp from '../sim/PowerUp.js';
 import Fireball from '../sim/Fireball.js';
@@ -38,8 +39,8 @@ const LEVEL = [
     '................................', // 8
     '..........?..B..?...............', // 9  col10 ?(蘑菇/火花), col13 B(砖), col16 ?(星)
     '................................', // 10
-    '................................', // 11
-    '................................', // 12
+    '......................##........', // 11 水管(col22-23)，管口在 row11
+    '......................##........', // 12
     '########.####################.##', // 13 地面（col8、col29 坑）
 ];
 const COLS = LEVEL[0].length;
@@ -65,7 +66,7 @@ export function startPhysicsDemo(canvas) {
     ctx.imageSmoothingEnabled = false;
 
     const keyboard = new KeyboardButtons().listenTo(window);
-    let grid, collider, blocks, player, power, slots, spawner, powerups, fireballs;
+    let grid, collider, blocks, player, power, slots, spawner, powerups, fireballs, piranha;
     let prevB = false;
     let coins = 0, stomps = 0, deaths = 0;
 
@@ -76,6 +77,7 @@ export function startPhysicsDemo(canvas) {
         power = new PowerState();
         powerups = [];
         fireballs = [];
+        piranha = new Piranha({x: 22 * TILE_SIZE, pipeTopY: 11 * TILE_SIZE});
         player = new PlayerMotion({x: START.x, y: START.y, width: 14, height: 16, world: collider});
         player.obstruct = side => onPlayerObstruct(side);
         slots = new ObjectSlots(5);
@@ -147,10 +149,14 @@ export function startPhysicsDemo(canvas) {
             for (const other of actives) resolveShellEnemy(shell, other);
         }
 
-        // 火球：推进 + 命中敌人
+        // 食人花：定时出入水管（玩家靠近则不出）
+        piranha.step(player.pixelX);
+
+        // 火球：推进 + 命中敌人/食人花
         for (const f of fireballs) {
             f.step();
             for (const e of actives) resolveFireballEnemy(f, e);
+            resolveFireballEnemy(f, piranha);
         }
         fireballs = fireballs.filter(f => f.alive);
 
@@ -162,16 +168,20 @@ export function startPhysicsDemo(canvas) {
         }
         powerups = powerups.filter(p => p.active);
 
-        // 玩家 × 敌人
+        // 玩家 × 敌人（含食人花）
+        const opts = {starActive: power.starActive, invincible: power.invincible};
+        const onHurt = () => {
+            const res = power.hurt();
+            if (res === 'die') { deaths++; reset(); return true; }
+            if (res === 'shrink') player.setHeight(16);
+            return false;
+        };
         for (const e of actives) {
-            const r = resolvePlayerEnemy(player, e, {starActive: power.starActive, invincible: power.invincible});
+            const r = resolvePlayerEnemy(player, e, opts);
             if (r === 'stomp') stomps++;
-            else if (r === 'hurt') {
-                const res = power.hurt();
-                if (res === 'die') { deaths++; reset(); return; }
-                if (res === 'shrink') player.setHeight(16);
-            }
+            else if (r === 'hurt' && onHurt()) return;
         }
+        if (resolvePlayerEnemy(player, piranha, opts) === 'hurt' && onHurt()) return;
 
         for (const [i, e] of slots.active()) if (!e.alive) slots.release(i);
 
@@ -182,7 +192,7 @@ export function startPhysicsDemo(canvas) {
     function frame(now) {
         if (last != null) clock.advance(now - last);
         last = now;
-        render(ctx, {grid, blocks, player, power, slots, powerups, fireballs,
+        render(ctx, {grid, blocks, player, power, slots, powerups, fireballs, piranha,
             hud: {frame: clock.frameCount, coins, stomps, deaths}});
         requestAnimationFrame(frame);
     }
@@ -190,7 +200,7 @@ export function startPhysicsDemo(canvas) {
 }
 
 function render(ctx, s) {
-    const {grid, blocks, player, power, slots, powerups, fireballs, hud} = s;
+    const {grid, blocks, player, power, slots, powerups, fireballs, piranha, hud} = s;
     const W = ctx.canvas.width, H = ctx.canvas.height;
     ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
 
@@ -249,6 +259,12 @@ function render(ctx, s) {
             ctx.fillRect(e.pixelX - 2, e.pixelY + 2, 2, 6);
             ctx.fillRect(e.pixelX + e.width, e.pixelY + 2, 2, 6);
         }
+    }
+
+    // 食人花（仅在探出时绘制；缩回则藏于管内）
+    if (piranha.alive && piranha.dangerous) {
+        ctx.fillStyle = '#2ca02c';
+        ctx.fillRect(piranha.pixelX, piranha.pixelY, piranha.width, piranha.height);
     }
 
     // 火球

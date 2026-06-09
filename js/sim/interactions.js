@@ -30,24 +30,24 @@ export function resolvePlayerEnemy(player, enemy, {starActive = false, invincibl
     const stomping = player.vy > 0 && playerBottom <= enemyMid;
 
     if (stomping) {
-        // 踩在敌人头上：goomba 压扁、koopa 缩壳/停壳，玩家弹起
-        enemy.stomp();
-        player.vy = -STOMP_BOUNCE;
-        return 'stomp';
-    }
-
-    // 侧面接触
-    if (enemy.state === 'shell') {
-        // 静止壳：朝远离玩家的方向踢出
+        if (enemy.stompable !== false) {
+            // 踩在可踩敌人头上：压扁/缩壳/停壳，玩家弹起
+            enemy.stomp();
+            player.vy = -STOMP_BOUNCE;
+            return 'stomp';
+        }
+        // 不可踩（食人花/刺猬…）：从上接触也会受伤 → 落入下方受伤分支
+    } else if (enemy.state === 'shell') {
+        // 侧面碰静止壳：朝远离玩家的方向踢出
         const dir = player.pos.x < enemy.pos.x ? 1 : -1;
         enemy.kick(dir);
         return 'kick';
     }
 
-    // 受伤无敌帧内：侧面接触不再受伤
+    // 受伤无敌帧内：接触不再受伤
     if (invincible) return 'none';
 
-    // 巡逻中的敌人或滑行的壳 → 伤害玩家
+    // 巡逻敌人 / 滑行壳 / 踩到不可踩敌人 → 伤害玩家
     return 'hurt';
 }
 

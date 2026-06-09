@@ -38,6 +38,7 @@ export default class Enemy {
         this.onGround = false;
         this.state = 'walking';
         this.squashTimer = 0;
+        this.stompable = true; // goomba/koopa 可被踩（食人花/刺猬等为 false）
     }
 
     get alive() {

@@ -14,6 +14,13 @@ export const STOMP_BOUNCE = sp(4.0); // 玩家踩敌后的弹起速度 VERIFY
 export const SQUASH_FRAMES = 30;     // goomba 被踩扁后停留多少帧再移除 VERIFY
 export const PARATROOPA_HOP = sp(3.0); // Paratroopa 落地起跳速度 VERIFY
 
+// ── 食人花 / 子弹比尔 ─────────────────────────────────────
+export const PIRANHA_SPEED = sp(0.5);     // 食人花升降速度 VERIFY
+export const PIRANHA_HIDDEN_FRAMES = 60;  // 缩在管内停留帧 VERIFY
+export const PIRANHA_EXPOSED_FRAMES = 60; // 完全探出停留帧 VERIFY
+export const PIRANHA_NEAR_DIST = 32;      // 玩家在此像素内则不探出 VERIFY
+export const BULLET_SPEED = sp(2.0);      // 子弹比尔水平速度 VERIFY
+
 // ── 道具 / 变身 ───────────────────────────────────────────
 export const DAMAGE_IFRAMES = 120;       // 受伤降级后的无敌帧 VERIFY
 export const STAR_DURATION = 600;        // 星星无敌时长（帧）VERIFY
